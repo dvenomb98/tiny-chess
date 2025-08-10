@@ -207,3 +207,21 @@ mod invalid_fen_tests {
         assert!(result.is_err());
     }
 }
+
+mod fen_stringifying_tests {
+    use super::*;
+
+    #[test]
+    fn test_initial_position() {
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let result = Chess::parse_fen(fen);
+
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+
+        let stringified = Chess::stringify(&parsed);
+
+        assert!(stringified.is_ok());
+        assert_eq!(stringified.unwrap(), fen);
+    }
+}
