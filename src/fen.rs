@@ -13,8 +13,10 @@
 //! - Are kings at least 1 square apart?
 //!
 use crate::err;
+use crate::pieces;
+use crate::player;
+use crate::square;
 use crate::types;
-use crate::utils;
 
 const GRID_SIZE_INDEX: usize = 7;
 const GRID_SIZE: usize = 8;
@@ -22,7 +24,7 @@ const EXACT_KINGS_COUNT: u8 = 1;
 const MAX_DISTANCE_BETWEEN_KINGS: u8 = 2;
 
 /// Parse FEN string into structured data.
-pub fn parse(fen: &str) -> err::ChessResult<types::ParsedFen> {
+pub(super) fn parse(fen: &str) -> types::ChessResult<types::ParsedFen> {
     let splitted_fen = split_by_first_whitespace(fen)?;
     let board = fen_to_board(splitted_fen.0)?;
     let state = fen_to_state(splitted_fen.1)?;
@@ -31,7 +33,7 @@ pub fn parse(fen: &str) -> err::ChessResult<types::ParsedFen> {
 }
 
 /// Convert structured FEN data back to FEN notation string.
-pub fn stringify(parsed_fen: &types::ParsedFen) -> err::ChessResult<String> {
+pub(super) fn stringify(parsed_fen: &types::ParsedFen) -> types::ChessResult<String> {
     let board = stringify_to_board(parsed_fen)?;
     let state = stringify_to_state(parsed_fen)?;
 
@@ -39,14 +41,14 @@ pub fn stringify(parsed_fen: &types::ParsedFen) -> err::ChessResult<String> {
 }
 
 /// Stringify the parsed_fen.board into fen string
-fn stringify_to_board(parsed_fen: &types::ParsedFen) -> err::ChessResult<String> {
+fn stringify_to_board(parsed_fen: &types::ParsedFen) -> types::ChessResult<String> {
     let mut fen = String::new();
 
     let mut white_kings_count = 0;
     let mut black_kings_count = 0;
 
-    let mut white_king_position = types::Square(0, 0);
-    let mut black_king_position = types::Square(0, 0);
+    let mut white_king_position = square::Square::new(0, 0);
+    let mut black_king_position = square::Square::new(0, 0);
 
     for (row_idx, row) in parsed_fen.board.iter().enumerate() {
         let mut count = 0;
@@ -57,28 +59,24 @@ fn stringify_to_board(parsed_fen: &types::ParsedFen) -> err::ChessResult<String>
 
         for (col, piece) in row.iter().enumerate() {
             if let Some(piece_char) = piece {
-                if types::VALID_PIECES.contains(*piece_char) {
-                    if count != 0 {
-                        fen.push_str(&count.to_string());
-                        count = 0;
-                    }
+                if count != 0 {
+                    fen.push_str(&count.to_string());
+                    count = 0;
+                }
 
-                    fen.push(*piece_char);
+                fen.push(piece_char.to_char());
 
-                    if validate_piece_placement(
-                        *piece_char,
-                        col,
-                        row_idx,
-                        &mut white_kings_count,
-                        &mut black_kings_count,
-                        &mut white_king_position,
-                        &mut black_king_position,
-                    )
-                    .is_err()
-                    {
-                        return Err(get_parsed_fen_error(parsed_fen));
-                    }
-                } else {
+                if validate_piece_placement(
+                    piece_char.to_char(),
+                    col,
+                    row_idx,
+                    &mut white_kings_count,
+                    &mut black_kings_count,
+                    &mut white_king_position,
+                    &mut black_king_position,
+                )
+                .is_err()
+                {
                     return Err(get_parsed_fen_error(parsed_fen));
                 }
             } else {
@@ -106,7 +104,7 @@ fn stringify_to_board(parsed_fen: &types::ParsedFen) -> err::ChessResult<String>
 }
 
 // Stringify the parsed_fen.state into fen string
-fn stringify_to_state(parsed_fen: &types::ParsedFen) -> err::ChessResult<String> {
+fn stringify_to_state(parsed_fen: &types::ParsedFen) -> types::ChessResult<String> {
     let types::ParsedFenState {
         full_moves,
         half_moves,
@@ -120,10 +118,7 @@ fn stringify_to_state(parsed_fen: &types::ParsedFen) -> err::ChessResult<String>
 
     let mut fen = String::new();
 
-    match on_turn {
-        types::Player::BLACK => fen.push(types::BLACK_PLAYER),
-        types::Player::WHITE => fen.push(types::WHITE_PLAYER),
-    }
+    fen.push(on_turn.to_char());
 
     fen.push(' ');
 
@@ -131,29 +126,26 @@ fn stringify_to_state(parsed_fen: &types::ParsedFen) -> err::ChessResult<String>
         fen.push('-')
     } else {
         if castle_white_short {
-            fen.push(types::WHITE_KING)
+            fen.push(pieces::PieceType::WhiteKing.to_char())
         }
         if castle_white_long {
-            fen.push(types::WHITE_QUEEN)
+            fen.push(pieces::PieceType::WhiteQueen.to_char())
         }
         if castle_black_short {
-            fen.push(types::BLACK_KING)
+            fen.push(pieces::PieceType::BlackKing.to_char())
         }
         if castle_black_long {
-            fen.push(types::BLACK_QUEEN)
+            fen.push(pieces::PieceType::BlackQueen.to_char())
         }
     }
 
     fen.push(' ');
 
     if let Some(enp) = en_passant_square {
-        let file = utils::coordinates::index_to_file_char(enp.0)
+        let notation = enp
+            .to_chess_notation()
             .ok_or_else(|| get_parsed_fen_error(parsed_fen))?;
-        let rank = utils::coordinates::rank_index_to_char(enp.1)
-            .ok_or_else(|| get_parsed_fen_error(parsed_fen))?;
-
-        fen.push(file);
-        fen.push(rank);
+        fen.push_str(&notation);
     } else {
         fen.push('-')
     }
@@ -172,7 +164,7 @@ fn stringify_to_state(parsed_fen: &types::ParsedFen) -> err::ChessResult<String>
 ///
 /// Parse board from first part of fen.
 ///
-fn fen_to_board(first_fen_part: &str) -> err::ChessResult<types::Board> {
+fn fen_to_board(first_fen_part: &str) -> types::ChessResult<types::Board> {
     let mut board: types::Board = [[None; 8]; 8];
     let mut row = 0;
     let mut col = 0;
@@ -180,8 +172,8 @@ fn fen_to_board(first_fen_part: &str) -> err::ChessResult<types::Board> {
     let mut white_kings_count = 0;
     let mut black_kings_count = 0;
 
-    let mut white_king_position = types::Square(0, 0);
-    let mut black_king_position = types::Square(0, 0);
+    let mut white_king_position = square::Square::new(0, 0);
+    let mut black_king_position = square::Square::new(0, 0);
 
     for ch in first_fen_part.chars() {
         match ch {
@@ -204,7 +196,7 @@ fn fen_to_board(first_fen_part: &str) -> err::ChessResult<types::Board> {
                 }
             }
             piece => {
-                if !types::VALID_PIECES.contains(piece) {
+                if !pieces::PieceType::is_valid_piece_char(piece) {
                     return Err(get_fen_error(first_fen_part));
                 }
 
@@ -222,7 +214,7 @@ fn fen_to_board(first_fen_part: &str) -> err::ChessResult<types::Board> {
                     return Err(get_fen_error(first_fen_part));
                 }
 
-                board[row][col] = Some(piece);
+                board[row][col] = pieces::PieceType::from_char(piece);
                 col += 1;
 
                 if col > GRID_SIZE {
@@ -253,7 +245,7 @@ fn fen_to_board(first_fen_part: &str) -> err::ChessResult<types::Board> {
 ///
 /// Parse state from second part of fen.
 ///
-fn fen_to_state(second_fen_part: &str) -> err::ChessResult<types::ParsedFenState> {
+fn fen_to_state(second_fen_part: &str) -> types::ChessResult<types::ParsedFenState> {
     let array_from_values: Vec<&str> = second_fen_part.split_whitespace().collect();
 
     if array_from_values.len() < 5 {
@@ -262,7 +254,7 @@ fn fen_to_state(second_fen_part: &str) -> err::ChessResult<types::ParsedFenState
 
     let mut initial_state = types::ParsedFenState {
         en_passant_square: None,
-        on_turn: types::Player::WHITE,
+        on_turn: player::Player::White,
         castle_white_short: false,
         castle_white_long: false,
         castle_black_short: false,
@@ -272,21 +264,31 @@ fn fen_to_state(second_fen_part: &str) -> err::ChessResult<types::ParsedFenState
     };
 
     // Parse current turn
-    match array_from_values[0] {
-        "w" => initial_state.on_turn = types::Player::WHITE,
-        "b" => initial_state.on_turn = types::Player::BLACK,
-        _ => return Err(get_fen_error(second_fen_part)),
-    }
+    initial_state.on_turn = match array_from_values[0].parse::<char>() {
+        Ok(c) => match player::Player::from_char(c) {
+            Some(player) => player,
+            None => return Err(get_fen_error(second_fen_part)),
+        },
+        Err(_) => return Err(get_fen_error(second_fen_part)),
+    };
 
     // Parse castling availability
     let castling = array_from_values[1];
     if castling != "-" {
         for ch in castling.chars() {
             match ch {
-                types::WHITE_KING => initial_state.castle_white_short = true,
-                types::WHITE_QUEEN => initial_state.castle_white_long = true,
-                types::BLACK_KING => initial_state.castle_black_short = true,
-                types::BLACK_QUEEN => initial_state.castle_black_long = true,
+                c if c == pieces::PieceType::WhiteKing.to_char() => {
+                    initial_state.castle_white_short = true
+                }
+                c if c == pieces::PieceType::WhiteQueen.to_char() => {
+                    initial_state.castle_white_long = true
+                }
+                c if c == pieces::PieceType::BlackKing.to_char() => {
+                    initial_state.castle_black_short = true
+                }
+                c if c == pieces::PieceType::BlackQueen.to_char() => {
+                    initial_state.castle_black_long = true
+                }
                 _ => return Err(get_fen_error(second_fen_part)),
             }
         }
@@ -295,22 +297,9 @@ fn fen_to_state(second_fen_part: &str) -> err::ChessResult<types::ParsedFenState
     // Parse en passant target square
     let en_passant = array_from_values[2];
     if en_passant != "-" {
-        let chars: Vec<char> = en_passant.chars().collect();
-
-        if chars.len() != 2 {
-            return Err(get_fen_error(second_fen_part));
-        }
-
-        let file = chars[0];
-        let rank = chars[1];
-
-        let col = utils::coordinates::file_char_to_index(file)
-            .ok_or_else(|| get_fen_error(second_fen_part))?;
-
-        let row = utils::coordinates::rank_char_to_index(rank)
-            .ok_or_else(|| get_fen_error(second_fen_part))?;
-
-        initial_state.en_passant_square = Some(types::Square(col, row));
+        initial_state.en_passant_square = square::Square::from_chess_notation(en_passant)
+            .ok_or_else(|| get_fen_error(second_fen_part))
+            .map(Some)?;
     }
 
     // Parse halfmove clock
@@ -344,7 +333,7 @@ fn get_parsed_fen_error(parsed_fen: &types::ParsedFen) -> err::ChessError {
 /// Split fen by first whitespace
 /// First part is board, second part is state.
 ///
-fn split_by_first_whitespace(fen: &str) -> err::ChessResult<(&str, &str)> {
+fn split_by_first_whitespace(fen: &str) -> types::ChessResult<(&str, &str)> {
     return fen.split_once(" ").ok_or(get_fen_error(fen));
 }
 
@@ -356,19 +345,21 @@ fn validate_piece_placement(
     row_idx: usize,
     white_kings_count: &mut u8,
     black_kings_count: &mut u8,
-    white_king_position: &mut types::Square,
-    black_king_position: &mut types::Square,
+    white_king_position: &mut square::Square,
+    black_king_position: &mut square::Square,
 ) -> Result<(), ()> {
     match piece_char {
-        types::WHITE_KING => {
+        c if c == pieces::PieceType::WhiteKing.to_char() => {
             *white_kings_count += 1;
-            *white_king_position = types::Square(col as u8, row_idx as u8);
+            *white_king_position = square::Square::new(row_idx, col);
         }
-        types::BLACK_KING => {
+        c if c == pieces::PieceType::BlackKing.to_char() => {
             *black_kings_count += 1;
-            *black_king_position = types::Square(col as u8, row_idx as u8);
+            *black_king_position = square::Square::new(row_idx, col);
         }
-        types::WHITE_PAWN | types::BLACK_PAWN => {
+        c if c == pieces::PieceType::WhitePawn.to_char()
+            || c == pieces::PieceType::BlackPawn.to_char() =>
+        {
             if row_idx == 0 || row_idx == GRID_SIZE_INDEX {
                 return Err(());
             }
@@ -381,8 +372,8 @@ fn validate_piece_placement(
 /// Validate that kings are at least 1 square apart
 /// Validate if there is at least 1 king for each color
 fn validate_king_placement(
-    white_king_position: &types::Square,
-    black_king_position: &types::Square,
+    white_king_position: &square::Square,
+    black_king_position: &square::Square,
     black_king_count: &mut u8,
     white_king_count: &mut u8,
 ) -> Result<(), ()> {
@@ -390,9 +381,9 @@ fn validate_king_placement(
         return Err(());
     }
 
-    if white_king_position.0.abs_diff(black_king_position.0) < MAX_DISTANCE_BETWEEN_KINGS
-        && white_king_position.1.abs_diff(black_king_position.1) < MAX_DISTANCE_BETWEEN_KINGS
-    {
+    let row_diff = (white_king_position.row as i32 - black_king_position.row as i32).abs();
+    let col_diff = (white_king_position.col as i32 - black_king_position.col as i32).abs();
+    if row_diff.max(col_diff) < MAX_DISTANCE_BETWEEN_KINGS as i32 {
         return Err(());
     }
     Ok(())

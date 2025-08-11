@@ -1,6 +1,4 @@
-use tiny_chess::Chess;
-use tiny_chess::err::ChessError;
-use tiny_chess::types::{Player, Square};
+use tiny_chess::{Chess, err, pieces, player, square};
 
 mod fen_parsing_tests {
     use super::*;
@@ -13,12 +11,12 @@ mod fen_parsing_tests {
         assert!(result.is_ok());
         let parsed = result.unwrap();
 
-        assert_eq!(parsed.board[0][0], Some('r')); // Black rook on a8
-        assert_eq!(parsed.board[0][4], Some('k')); // Black king on e8
-        assert_eq!(parsed.board[7][0], Some('R')); // White rook on a1
-        assert_eq!(parsed.board[7][4], Some('K')); // White king on e1
+        assert_eq!(parsed.board[0][0], Some(pieces::PieceType::BlackRook)); // Black rook on a8
+        assert_eq!(parsed.board[0][4], Some(pieces::PieceType::BlackKing)); // Black king on e8
+        assert_eq!(parsed.board[7][0], Some(pieces::PieceType::WhiteRook)); // White rook on a1
+        assert_eq!(parsed.board[7][4], Some(pieces::PieceType::WhiteKing)); // White king on e1
 
-        assert!(matches!(parsed.state.on_turn, Player::WHITE));
+        assert!(matches!(parsed.state.on_turn, player::Player::White));
         assert!(parsed.state.castle_white_short);
         assert!(parsed.state.castle_white_long);
         assert!(parsed.state.castle_black_short);
@@ -36,16 +34,16 @@ mod fen_parsing_tests {
         assert!(result.is_ok());
         let parsed = result.unwrap();
 
-        assert_eq!(parsed.board[4][4], Some('P')); // White pawn on e4
-        assert_eq!(parsed.board[2][5], Some('n')); // Black knight on f6
+        assert_eq!(parsed.board[4][4], Some(pieces::PieceType::WhitePawn)); // White pawn on e4
+        assert_eq!(parsed.board[2][5], Some(pieces::PieceType::BlackKnight)); // Black knight on f6
 
-        assert!(matches!(parsed.state.on_turn, Player::BLACK));
+        assert!(matches!(parsed.state.on_turn, player::Player::Black));
         assert_eq!(parsed.state.half_moves, 1);
         assert_eq!(parsed.state.full_moves, 2);
 
-        if let Some(Square(col, row)) = parsed.state.en_passant_square {
-            assert_eq!(col, 4); // e file
-            assert_eq!(row, 2); // 3rd rank (0-indexed as 2)
+        if let Some(square) = parsed.state.en_passant_square {
+            assert_eq!(square.col, 4); // e file
+            assert_eq!(square.row, 5); // 3rd rank (corrected: 7-3+1 = 5)
         } else {
             panic!("Expected en passant square");
         }
@@ -86,7 +84,7 @@ mod fen_parsing_tests {
 
         assert!(result.is_ok());
         let parsed = result.unwrap();
-        assert_eq!(parsed.board[0][7], Some('Q')); // White queen on h8 (promoted)
+        assert_eq!(parsed.board[0][7], Some(pieces::PieceType::WhiteQueen)); // White queen on h8 (promoted)
     }
 
     #[test]
@@ -99,6 +97,20 @@ mod fen_parsing_tests {
         assert_eq!(parsed.state.half_moves, 50);
         assert_eq!(parsed.state.full_moves, 100);
     }
+
+    #[test]
+    fn test_en_passant() {
+        let fen = "rnbqkbnr/pp1p1ppp/8/2pPp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3";
+        let result = Chess::parse_fen(fen);
+
+        assert!(result.is_ok());
+        let parsed = result.unwrap();
+
+        assert_eq!(
+            parsed.state.en_passant_square,
+            Some(square::Square::new(2, 4))
+        );
+    }
 }
 
 mod invalid_fen_tests {
@@ -108,7 +120,10 @@ mod invalid_fen_tests {
     fn test_empty_fen() {
         let result = Chess::parse_fen("");
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), ChessError::InvalidFen(_)));
+        assert!(matches!(
+            result.unwrap_err(),
+            err::ChessError::InvalidFen(_)
+        ));
     }
 
     #[test]
@@ -186,6 +201,13 @@ mod invalid_fen_tests {
     #[test]
     fn test_king_too_close() {
         let fen = "rnbqkKnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR w KQkq - 0 1";
+        let result = Chess::parse_fen(fen);
+
+        assert!(result.is_err());
+    }
+    #[test]
+    fn test_king_too_close2() {
+        let fen = "rnbq1bnr/ppp1pppp/8/1k1p4/1K1P4/8/PPP1PPPP/RNBQ1BNR w - - 6 5";
         let result = Chess::parse_fen(fen);
 
         assert!(result.is_err());
