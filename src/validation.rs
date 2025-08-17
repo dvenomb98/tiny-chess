@@ -25,8 +25,8 @@ pub fn validate_move(req_move: types::Move, game: types::ParsedFen) -> types::Ch
 
     let is_white = req_move.piece.is_white();
     let target_king_piece = match is_white {
-        true => pieces::PieceType::BlackKing,
-        false => pieces::PieceType::WhiteKing,
+        true => pieces::PieceType::WhiteKing,
+        false => pieces::PieceType::BlackKing,
     };
 
     for (row_idx, row) in next_game.board.iter().enumerate() {
@@ -45,7 +45,7 @@ pub fn validate_move(req_move: types::Move, game: types::ParsedFen) -> types::Ch
 
     if king_position.is_none() {
         return Err(err::ChessError::InvalidMove(
-            "Opponent king not found".to_string(),
+            "Current player king not found".to_string(),
         ));
     }
 
@@ -55,7 +55,7 @@ pub fn validate_move(req_move: types::Move, game: types::ParsedFen) -> types::Ch
         ));
     }
 
-    let (can_castle_short, can_castle_long) = next_game.get_castle_ability(req_move.piece.color());
+    let (can_castle_short, can_castle_long) = game.get_castle_ability(req_move.piece.color());
 
     for piece_sq in opponent_pieces {
         let pseudo_moves = moves::get_pseudo_moves(piece_sq, next_game);
@@ -72,13 +72,15 @@ pub fn validate_move(req_move: types::Move, game: types::ParsedFen) -> types::Ch
             })
             .is_some()
         {
-            return Err(err::ChessError::InvalidMove("King is in check".to_string()));
+            return Err(err::ChessError::InvalidMove(
+                "King would end up in check".to_string(),
+            ));
         }
 
         if req_move.piece.piece_kind() == pieces::PieceKind::King && req_move.is_castle {
             if !can_castle_short && !can_castle_long {
                 return Err(err::ChessError::InvalidMove(
-                    "King cannot castle".to_string(),
+                    "King cannot castle.".to_string(),
                 ));
             }
 

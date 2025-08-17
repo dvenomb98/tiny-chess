@@ -27,3 +27,6 @@ mod square;
 
 #[cfg(test)]
 mod state;
+
+#[cfg(test)]
+mod validation;
