@@ -102,4 +102,11 @@ impl PieceType {
             PieceType::BlackRook | PieceType::WhiteRook => PieceKind::Rook,
         }
     }
+
+    pub fn is_white(&self) -> bool {
+        match self.color() {
+            player::Player::White => true,
+            player::Player::Black => false,
+        }
+    }
 }

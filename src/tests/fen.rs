@@ -1,7 +1,8 @@
-use tiny_chess::{Chess, err, pieces, player, square};
-
+#[cfg(test)]
 mod fen_parsing_tests {
-    use super::*;
+    use crate::{Chess, pieces, player, square};
+
+
 
     #[test]
     fn test_initial_position() {
@@ -113,8 +114,10 @@ mod fen_parsing_tests {
     }
 }
 
+
+#[cfg(test)]
 mod invalid_fen_tests {
-    use super::*;
+    use crate::{Chess, err};
 
     #[test]
     fn test_empty_fen() {
@@ -230,8 +233,10 @@ mod invalid_fen_tests {
     }
 }
 
+
+#[cfg(test)]
 mod fen_stringifying_tests {
-    use super::*;
+    use crate::Chess;
 
     #[test]
     fn test_initial_position() {

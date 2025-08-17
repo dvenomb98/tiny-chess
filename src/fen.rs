@@ -18,24 +18,22 @@ use crate::player;
 use crate::square;
 use crate::types;
 
-const GRID_SIZE_INDEX: usize = 7;
-const GRID_SIZE: usize = 8;
 const EXACT_KINGS_COUNT: u8 = 1;
 const MAX_DISTANCE_BETWEEN_KINGS: u8 = 2;
 
 /// Parse FEN string into structured data.
 pub(super) fn parse(fen: &str) -> types::ChessResult<types::ParsedFen> {
-    let splitted_fen = split_by_first_whitespace(fen)?;
-    let board = fen_to_board(splitted_fen.0)?;
-    let state = fen_to_state(splitted_fen.1)?;
+    let splitted_fen = self::split_by_first_whitespace(fen)?;
+    let board = self::fen_to_board(splitted_fen.0)?;
+    let state = self::fen_to_state(splitted_fen.1)?;
 
     return Ok(types::ParsedFen { board, state });
 }
 
 /// Convert structured FEN data back to FEN notation string.
 pub(super) fn stringify(parsed_fen: &types::ParsedFen) -> types::ChessResult<String> {
-    let board = stringify_to_board(parsed_fen)?;
-    let state = stringify_to_state(parsed_fen)?;
+    let board = self::stringify_to_board(parsed_fen)?;
+    let state = self::stringify_to_state(parsed_fen)?;
 
     return Ok(format!("{} {}", board, state));
 }
@@ -81,7 +79,7 @@ fn stringify_to_board(parsed_fen: &types::ParsedFen) -> types::ChessResult<Strin
                 }
             } else {
                 count += 1;
-                if col >= GRID_SIZE_INDEX {
+                if col >= types::MAX_SIZE_INDEX {
                     fen.push_str(&count.to_string());
                     count = 0;
                 }
@@ -89,7 +87,7 @@ fn stringify_to_board(parsed_fen: &types::ParsedFen) -> types::ChessResult<Strin
         }
     }
 
-    if validate_king_placement(
+    if self::validate_king_placement(
         &white_king_position,
         &black_king_position,
         &mut black_kings_count,
@@ -165,7 +163,7 @@ fn stringify_to_state(parsed_fen: &types::ParsedFen) -> types::ChessResult<Strin
 /// Parse board from first part of fen.
 ///
 fn fen_to_board(first_fen_part: &str) -> types::ChessResult<types::Board> {
-    let mut board: types::Board = [[None; 8]; 8];
+    let mut board: types::Board = [[None; types::BOARD_SIZE]; types::BOARD_SIZE];
     let mut row = 0;
     let mut col = 0;
 
@@ -178,20 +176,20 @@ fn fen_to_board(first_fen_part: &str) -> types::ChessResult<types::Board> {
     for ch in first_fen_part.chars() {
         match ch {
             '/' => {
-                if col < GRID_SIZE {
+                if col < types::BOARD_SIZE {
                     return Err(get_fen_error(first_fen_part));
                 }
 
                 row += 1;
                 col = 0;
 
-                if row > GRID_SIZE_INDEX {
+                if row > types::MAX_SIZE_INDEX {
                     return Err(get_fen_error(first_fen_part));
                 }
             }
             '1'..='8' => {
                 col += ch.to_digit(10).unwrap() as usize;
-                if col > GRID_SIZE {
+                if col > types::BOARD_SIZE {
                     return Err(get_fen_error(first_fen_part));
                 }
             }
@@ -217,18 +215,18 @@ fn fen_to_board(first_fen_part: &str) -> types::ChessResult<types::Board> {
                 board[row][col] = pieces::PieceType::from_char(piece);
                 col += 1;
 
-                if col > GRID_SIZE {
+                if col > types::BOARD_SIZE {
                     return Err(get_fen_error(first_fen_part));
                 }
             }
         }
     }
 
-    if row != GRID_SIZE_INDEX {
+    if row != types::MAX_SIZE_INDEX {
         return Err(get_fen_error(first_fen_part));
     }
 
-    if validate_king_placement(
+    if self::validate_king_placement(
         &white_king_position,
         &black_king_position,
         &mut black_kings_count,
@@ -360,7 +358,7 @@ fn validate_piece_placement(
         c if c == pieces::PieceType::WhitePawn.to_char()
             || c == pieces::PieceType::BlackPawn.to_char() =>
         {
-            if row_idx == 0 || row_idx == GRID_SIZE_INDEX {
+            if row_idx == 0 || row_idx == types::MAX_SIZE_INDEX {
                 return Err(());
             }
         }

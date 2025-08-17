@@ -1,8 +1,8 @@
-use tiny_chess::square;
-
 #[cfg(test)]
-mod square_tests {
-    use super::*;
+mod test_square {
+    use crate::square;
+
+
 
     #[test]
     fn test_from_chess_notation() {
