@@ -17,7 +17,11 @@ pub fn validate_moves(req_moves: Vec<types::Move>, game: types::ParsedFen) -> Ve
     validated_moves
 }
 
-pub fn validate_move(req_move: types::Move, game: types::ParsedFen) -> types::ChessResult<()> {
+// TODO: Extend this to check for wrong moves (pawns jumping across the board, capturing own pieces, etc..)
+pub fn validate_move(
+    req_move: types::Move,
+    game: types::ParsedFen,
+) -> types::ChessResult<types::ParsedFen> {
     let next_game = state::get_next(req_move, game)?;
 
     let mut king_position: Option<square::Square> = None;
@@ -127,5 +131,5 @@ pub fn validate_move(req_move: types::Move, game: types::ParsedFen) -> types::Ch
         }
     }
 
-    Ok(())
+    Ok(next_game)
 }

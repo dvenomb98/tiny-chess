@@ -3,6 +3,7 @@ mod fen;
 mod moves;
 mod pieces;
 mod player;
+mod result;
 mod square;
 mod state;
 mod types;
@@ -15,13 +16,13 @@ mod tests;
 pub use err::ChessError;
 pub use pieces::{PieceKind, PieceType};
 pub use player::Player;
+pub use result::GameResult;
 pub use square::Square;
 pub use types::{ChessResult, Move, ParsedFen, ParsedFenState};
 
 pub struct Chess {}
 
 impl Chess {
-    
     /// Parses a FEN (Forsyth-Edwards Notation) string into a chess game state.
     /// Returns a parsed representation that can be used for game operations.
     pub fn parse_fen(fen: &str) -> types::ChessResult<types::ParsedFen> {
@@ -53,8 +54,7 @@ impl Chess {
         req_move: types::Move,
         game: types::ParsedFen,
     ) -> types::ChessResult<types::ParsedFen> {
-        validation::validate_move(req_move, game)?;
-        state::get_next(req_move, game)
+        Ok(validation::validate_move(req_move, game)?)
     }
 
     /// Validates whether a move is legal in the current game state.
@@ -66,5 +66,11 @@ impl Chess {
         validation::validate_move(req_move, game)?;
 
         Ok(true)
+    }
+
+    /// Gets the game result for a given game state.
+    /// Returns the game result if the game is over, or None if the game is not over.
+    pub fn get_game_result(game: types::ParsedFen) -> types::ChessResult<Option<GameResult>> {
+        result::get_game_result(game)
     }
 }

@@ -7,7 +7,7 @@ pub enum ChessError {
     InvalidParsedFen(types::ParsedFen),
     InvalidSquare(String),
     OutOfBounds(usize, usize),
-    InvalidMove(String),
+    InvalidMove(String)
 }
 
 impl fmt::Display for ChessError {

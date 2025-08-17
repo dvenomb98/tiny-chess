@@ -30,3 +30,6 @@ mod state;
 
 #[cfg(test)]
 mod validation;
+
+#[cfg(test)]
+mod result;
