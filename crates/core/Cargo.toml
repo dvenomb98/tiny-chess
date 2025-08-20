@@ -6,3 +6,6 @@ authors.workspace = true
 description = "Core chess engine logic - pure Rust implementation without bindings"
 license.workspace = true
 repository.workspace = true
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }

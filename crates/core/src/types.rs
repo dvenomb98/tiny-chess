@@ -1,3 +1,4 @@
+use serde::{Serialize, Deserialize};
 use crate::err;
 use crate::pieces;
 use crate::player;
@@ -13,7 +14,7 @@ pub type BoardValue = Option<pieces::PieceType>;
 /// 2D array of 8x8 squares
 pub type Board = [[BoardValue; 8]; 8];
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 /// Represents the parsed FEN state without board
 pub struct ParsedFenState {
     pub en_passant_square: Option<square::Square>,
@@ -26,7 +27,7 @@ pub struct ParsedFenState {
     pub full_moves: u32,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct Move {
     pub from_col_idx: usize,
     pub from_row_idx: usize,
@@ -39,7 +40,7 @@ pub struct Move {
 
 pub type ChessResult<T> = std::result::Result<T, err::ChessError>;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 /// Represents the parsed FEN position
 pub struct ParsedFen {
     pub board: Board,

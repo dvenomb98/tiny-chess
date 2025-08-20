@@ -1,7 +1,8 @@
+use serde::{Serialize, Deserialize};
 use crate::pieces;
 use crate::types;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 /// Represents a square on the board
 /// Uses 0-based indexing: ranks 1-8 = 7-0 (inverted), files a-h = 0-7
 /// Row 0 = rank 8 (top), Row 7 = rank 1 (bottom)

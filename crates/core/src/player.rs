@@ -1,7 +1,9 @@
+use serde::{Serialize, Deserialize};
+
 const BLACK_PLAYER: char = 'b';
 const WHITE_PLAYER: char = 'w';
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 /// Represents the player on the board
 pub enum Player {
     White,

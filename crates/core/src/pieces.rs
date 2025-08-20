@@ -1,3 +1,4 @@
+use serde::{Serialize, Deserialize};
 use crate::player;
 
 const WHITE_KING: char = 'K';
@@ -14,7 +15,7 @@ const BLACK_BISHOP: char = 'b';
 const BLACK_KNIGHT: char = 'n';
 const BLACK_PAWN: char = 'p';
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum PieceType {
     WhitePawn,
     WhiteRook,
@@ -30,7 +31,7 @@ pub enum PieceType {
     BlackKing,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PieceKind {
     Pawn,
     Rook,
