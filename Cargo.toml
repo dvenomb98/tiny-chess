@@ -10,4 +10,3 @@ authors = ["Daniel Bilek <danielbilek98@seznam.cz>"]
 description = "A minimal chess engine designed to be compiled to WASM and used in Node.js runtime."
 license = "MIT"
 repository = "https://github.com/danielbilek/tiny-chess"
-
