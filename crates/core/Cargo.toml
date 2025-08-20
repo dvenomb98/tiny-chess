@@ -1,0 +1,8 @@
+[package]
+name = "tiny-chess-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Core chess engine logic - pure Rust implementation without bindings"
+license.workspace = true
+repository.workspace = true
