@@ -14,6 +14,7 @@ mod tests;
 
 // Public API
 pub use err::ChessError;
+pub use fen::INITIAL_FEN;
 pub use pieces::{PieceKind, PieceType};
 pub use player::Player;
 pub use result::GameResult;

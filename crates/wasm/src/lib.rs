@@ -1,15 +1,16 @@
+use cfg_if::cfg_if;
 use tiny_chess_core::*;
 use wasm_bindgen::prelude::*;
 
 // Custom TypeScript definitions
 #[wasm_bindgen(typescript_custom_section)]
 const TS_APPEND_CONTENT: &'static str = r#"
-export interface ParsedFen {
+export type ParsedFen = {
   board: (PieceType | null)[][];
   state: ParsedFenState;
 }
 
-export interface ParsedFenState {
+export type ParsedFenState = {
   en_passant_square: Square | null;
   on_turn: Player;
   castle_white_short: boolean;
@@ -20,10 +21,24 @@ export interface ParsedFenState {
   full_moves: number;
 }
 
-export interface Square {
+export type Square = {
   row: number;
   col: number;
 }
+
+export type Move = {
+  from_col_idx: number;
+  from_row_idx: number;
+  to_col_idx: number;
+  to_row_idx: number;
+  is_passant: boolean;
+  is_castle: boolean;
+  piece: PieceType;
+}
+
+export type Moves = Move[];
+
+export type GameResult = "WhiteCheckmate" | "BlackCheckmate" | "Stalemate" | "InsufficientMaterial" | "FiftyMoveRule" | "ThreefoldRepetition" | null;
 
 export type Player = "White" | "Black";
 
@@ -32,25 +47,105 @@ export type PieceType =
   | "BlackPawn" | "BlackRook" | "BlackBishop" | "BlackKnight" | "BlackQueen" | "BlackKing";
 "#;
 
+cfg_if! {
+    if #[cfg(feature = "wee_alloc")] {
+        #[global_allocator]
+        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+    }
+}
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(typescript_type = "ParsedFen")]
     pub type ParsedFenJs;
+
+    #[wasm_bindgen(typescript_type = "Moves")]
+    pub type MovesJs;
+
+    #[wasm_bindgen(typescript_type = "Move")]
+    pub type MoveJs;
+
+    #[wasm_bindgen(typescript_type = "GameResult")]
+    pub type GameResultJs;
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = "parseFen")]
 pub fn parse_fen(fen: &str) -> Result<ParsedFenJs, JsValue> {
-    let result = Chess::parse_fen(fen)
-        .map_err(|e| JsValue::from_str(&format!("{:?}", e)))?;
-    
+    let result = Chess::parse_fen(fen).map_err(|e| format_error(e))?;
     Ok(serde_wasm_bindgen::to_value(&result)?.into())
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = "stringifyFen")]
 pub fn stringify_fen(game: ParsedFenJs) -> Result<String, JsValue> {
-    let parsed_game: ParsedFen = serde_wasm_bindgen::from_value(game.into())
-        .map_err(|e| JsValue::from_str(&e.to_string()))?;
-    
-    Chess::stringify(&parsed_game)
-        .map_err(|e| JsValue::from_str(&format!("{:?}", e)))
+    let parsed_game = parse_game_js(game)?;
+    Chess::stringify(&parsed_game).map_err(|e| format_error(e))
+}
+
+#[wasm_bindgen]
+pub struct WasmChess {
+    game: ParsedFen,
+}
+
+#[wasm_bindgen]
+impl WasmChess {
+    #[wasm_bindgen(constructor)]
+    pub fn new(fen: Option<String>) -> Result<WasmChess, JsValue> {
+        let game = if let Some(fen_str) = fen {
+            Chess::parse_fen(&fen_str).map_err(|e| format_error(e))?
+        } else {
+            Chess::parse_fen(INITIAL_FEN).map_err(|e| format_error(e))?
+        };
+
+        Ok(WasmChess { game })
+    }
+
+    #[wasm_bindgen(js_name = "toFen")]
+    pub fn to_fen(&self) -> Result<String, JsValue> {
+        Chess::stringify(&self.game).map_err(|e| format_error(e))
+    }
+
+    #[wasm_bindgen(js_name = "getMoves")]
+    pub fn get_moves(&self, row: usize, col: usize) -> Result<MovesJs, JsValue> {
+        let moves = Chess::get_moves(Square::new(row, col), self.game);
+        Ok(serde_wasm_bindgen::to_value(&moves)?.into())
+    }
+
+    #[wasm_bindgen(js_name = "getPseudoMoves")]
+    pub fn get_pseudo_moves(&self, row: usize, col: usize) -> Result<MovesJs, JsValue> {
+        let moves = Chess::get_pseudo_moves(Square::new(row, col), self.game);
+        Ok(serde_wasm_bindgen::to_value(&moves)?.into())
+    }
+
+    #[wasm_bindgen(js_name = "movePiece")]
+    pub fn move_piece(&mut self, req_move: MoveJs) -> Result<(), JsValue> {
+        let parsed_move = parse_move_js(req_move)?;
+        let result = Chess::move_piece(parsed_move, self.game).map_err(|e| format_error(e))?;
+        self.game = result;
+        Ok(())
+    }
+
+    #[wasm_bindgen(js_name = "validateMove")]
+    pub fn validate_move(&self, req_move: MoveJs) -> Result<bool, JsValue> {
+        let parsed_move = parse_move_js(req_move)?;
+        let result = Chess::validate_move(parsed_move, self.game).map_err(|e| format_error(e))?;
+        Ok(result)
+    }
+
+    #[wasm_bindgen(js_name = "getGameResult")]
+    pub fn get_game_result(&self) -> Result<GameResultJs, JsValue> {
+        let result = Chess::get_game_result(self.game).map_err(|e| format_error(e))?;
+        Ok(serde_wasm_bindgen::to_value(&result)?.into())
+    }
+}
+
+fn parse_game_js(game: ParsedFenJs) -> Result<ParsedFen, JsValue> {
+    serde_wasm_bindgen::from_value::<ParsedFen>(game.into()).map_err(|e| format_error(e))
+}
+
+fn parse_move_js(req_move: MoveJs) -> Result<Move, JsValue> {
+    serde_wasm_bindgen::from_value::<Move>(req_move.into()).map_err(|e| format_error(e))
+}
+
+fn format_error<T: std::fmt::Debug>(error: T) -> JsValue {
+    JsValue::from_str(&format!("{:#?}", error))
 }

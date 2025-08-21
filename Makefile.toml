@@ -1,7 +1,21 @@
 
-[tasks.build-wasm]
-description = "Build the WASM crate"
+[tasks.build-wasm-dev]
+description = "Build the WASM crate with dev features"
 cwd = "crates/wasm"
 command = "wasm-pack"
-args = ["build", "--target", "bundler"]
+args = ["build", "--target", "bundler", "--dev", "--features", "console_error_panic_hook"]
+workspace = false
+
+[tasks.build-wasm-profiling]
+description = "Build the WASM crate with profiling features"
+cwd = "crates/wasm"
+command = "wasm-pack"
+args = ["build", "--target", "bundler", "--profiling","--features", "we_alloc"]
+workspace = false
+
+[tasks.build-wasm-release]
+description = "Build the WASM crate with release features"
+cwd = "crates/wasm"
+command = "wasm-pack"
+args = ["build", "--target", "bundler", "--release", "--features", "wee_alloc"]
 workspace = false

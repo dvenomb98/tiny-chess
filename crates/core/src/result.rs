@@ -14,6 +14,7 @@
 //! 2. King and bishop vs. king
 //! 3. King and knight vs. king
 //! 4. King and bishop vs. king and bishop (bishops have to be on the same color)
+use serde::{Serialize, Deserialize};
 
 use crate::Chess;
 use crate::err;
@@ -22,7 +23,8 @@ use crate::player;
 use crate::square;
 use crate::types;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum GameResult {
     WhiteCheckmate,
     BlackCheckmate,

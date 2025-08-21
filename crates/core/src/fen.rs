@@ -18,6 +18,9 @@ use crate::player;
 use crate::square;
 use crate::types;
 
+/// Initial starting game position
+pub const INITIAL_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 const EXACT_KINGS_COUNT: u8 = 1;
 const MAX_DISTANCE_BETWEEN_KINGS: u8 = 2;
 
