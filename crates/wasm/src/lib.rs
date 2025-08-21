@@ -5,8 +5,11 @@ use wasm_bindgen::prelude::*;
 // Custom TypeScript definitions
 #[wasm_bindgen(typescript_custom_section)]
 const TS_APPEND_CONTENT: &'static str = r#"
+
+export type Board = (PieceType | null)[][];
+
 export type ParsedFen = {
-  board: (PieceType | null)[][];
+  board: Board;
   state: ParsedFenState;
 }
 
@@ -67,6 +70,9 @@ extern "C" {
 
     #[wasm_bindgen(typescript_type = "GameResult")]
     pub type GameResultJs;
+
+    #[wasm_bindgen(typescript_type = "Square")]
+    pub type SquareJs;
 }
 
 #[wasm_bindgen(js_name = "parseFen")]
@@ -135,6 +141,17 @@ impl WasmChess {
     pub fn get_game_result(&self) -> Result<GameResultJs, JsValue> {
         let result = Chess::get_game_result(self.game).map_err(|e| format_error(e))?;
         Ok(serde_wasm_bindgen::to_value(&result)?.into())
+    }
+
+    #[wasm_bindgen(js_name = "squareToChessNotation")]
+    pub fn square_to_chess_notation(&self, row: usize, col: usize) -> Option<String> {
+        Square::new(row, col).to_chess_notation()
+    }
+
+    #[wasm_bindgen(js_name = "squareFromChessNotation")]
+    pub fn square_from_chess_notation(&self, notation: &str) -> Option<SquareJs> {
+        Square::new_from_chess_notation(notation)
+            .map(|square| serde_wasm_bindgen::to_value(&square).unwrap().into())
     }
 }
 

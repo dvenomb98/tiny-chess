@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
 use crate::pieces;
 use crate::types;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 /// Represents a square on the board
@@ -15,6 +15,15 @@ impl Square {
     /// Create a new square at the specified row and column
     pub fn new(row: usize, col: usize) -> Self {
         Self { row, col }
+    }
+
+    pub fn new_from_chess_notation(notation: &str) -> Option<Self> {
+        let square = Self::from_chess_notation(notation)?;
+
+        Some(Self {
+            row: square.row,
+            col: square.col,
+        })
     }
 
     /// Create a square from chess notation (e.g., "e4", "a1")
