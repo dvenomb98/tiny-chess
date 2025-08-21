@@ -24,10 +24,12 @@ cargo make build-wasm-profiling
 cargo make build-wasm-release
 ```
 
-### Publish to npm
+### Development Playground
 
 ```bash
-npm publish
+cd playground
+npm install
+npm run dev
 ```
 
 ## Structure
@@ -57,4 +59,5 @@ tiny-chess/
 
 ### WASM Integration
 
-- [ ] **WASM Bindings** - Expose public API for JavaScript
+- [x] **WASM Bindings** - Expose public API for JavaScript
+- [ ] **E2E Tests** - Test WASM bindings in Node.js runtime

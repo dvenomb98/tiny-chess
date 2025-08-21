@@ -1,5 +1,5 @@
 [package]
-name = "tiny-chess-wasm"
+name = "wasm-chess"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
