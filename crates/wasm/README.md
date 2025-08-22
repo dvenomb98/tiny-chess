@@ -166,10 +166,10 @@ Example: Square "e4" = `{ row: 3, col: 4 }`
 
 ## 📄 License
 
-MIT © [Daniel Bilek](https://github.com/danielbilek)
+MIT © [Daniel Bilek](https://github.com/dvenomb98)
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/danielbilek/tiny-chess)
-- [Issues & Bug Reports](https://github.com/danielbilek/tiny-chess/issues)
-- [npm Package](https://www.npmjs.com/package/tiny-chess-wasm)
+- [GitHub Repository](https://github.com/dvenomb98/tiny-chess)
+- [Issues & Bug Reports](https://github.com/dvenomb98/tiny-chess/issues)
+- [npm Package](https://www.npmjs.com/package/wasm-chess)
