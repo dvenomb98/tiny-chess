@@ -75,13 +75,13 @@ extern "C" {
     pub type SquareJs;
 }
 
-#[wasm_bindgen(js_name = "parseFen")]
+#[wasm_bindgen]
 pub fn parse_fen(fen: &str) -> Result<ParsedFenJs, JsValue> {
     let result = Chess::parse_fen(fen).map_err(|e| format_error(e))?;
     Ok(serde_wasm_bindgen::to_value(&result)?.into())
 }
 
-#[wasm_bindgen(js_name = "stringifyFen")]
+#[wasm_bindgen]
 pub fn stringify_fen(game: ParsedFenJs) -> Result<String, JsValue> {
     let parsed_game = parse_game_js(game)?;
     Chess::stringify(&parsed_game).map_err(|e| format_error(e))
@@ -105,24 +105,24 @@ impl WasmChess {
         Ok(WasmChess { game })
     }
 
-    #[wasm_bindgen(js_name = "toFen")]
+    #[wasm_bindgen]
     pub fn to_fen(&self) -> Result<String, JsValue> {
         Chess::stringify(&self.game).map_err(|e| format_error(e))
     }
 
-    #[wasm_bindgen(js_name = "getMoves")]
+    #[wasm_bindgen]
     pub fn get_moves(&self, row: usize, col: usize) -> Result<MovesJs, JsValue> {
         let moves = Chess::get_moves(Square::new(row, col), self.game);
         Ok(serde_wasm_bindgen::to_value(&moves)?.into())
     }
 
-    #[wasm_bindgen(js_name = "getPseudoMoves")]
+    #[wasm_bindgen]
     pub fn get_pseudo_moves(&self, row: usize, col: usize) -> Result<MovesJs, JsValue> {
         let moves = Chess::get_pseudo_moves(Square::new(row, col), self.game);
         Ok(serde_wasm_bindgen::to_value(&moves)?.into())
     }
 
-    #[wasm_bindgen(js_name = "movePiece")]
+    #[wasm_bindgen]
     pub fn move_piece(&mut self, req_move: MoveJs) -> Result<(), JsValue> {
         let parsed_move = parse_move_js(req_move)?;
         let result = Chess::move_piece(parsed_move, self.game).map_err(|e| format_error(e))?;
@@ -130,25 +130,25 @@ impl WasmChess {
         Ok(())
     }
 
-    #[wasm_bindgen(js_name = "validateMove")]
+    #[wasm_bindgen]
     pub fn validate_move(&self, req_move: MoveJs) -> Result<bool, JsValue> {
         let parsed_move = parse_move_js(req_move)?;
         let result = Chess::validate_move(parsed_move, self.game).map_err(|e| format_error(e))?;
         Ok(result)
     }
 
-    #[wasm_bindgen(js_name = "getGameResult")]
+    #[wasm_bindgen]
     pub fn get_game_result(&self) -> Result<GameResultJs, JsValue> {
         let result = Chess::get_game_result(self.game).map_err(|e| format_error(e))?;
         Ok(serde_wasm_bindgen::to_value(&result)?.into())
     }
 
-    #[wasm_bindgen(js_name = "squareToChessNotation")]
+    #[wasm_bindgen]
     pub fn square_to_chess_notation(&self, row: usize, col: usize) -> Option<String> {
         Square::new(row, col).to_chess_notation()
     }
 
-    #[wasm_bindgen(js_name = "squareFromChessNotation")]
+    #[wasm_bindgen]
     pub fn square_from_chess_notation(&self, notation: &str) -> Option<SquareJs> {
         Square::new_from_chess_notation(notation)
             .map(|square| serde_wasm_bindgen::to_value(&square).unwrap().into())

@@ -71,28 +71,28 @@ new WasmChess(fen?: string)
 
 ### Methods
 
-#### `getMoves(row: number, col: number): Move[]`
+#### `get_moves(row: number, col: number): Move[]`
 Get all legal moves for a piece at the specified position.
 
-#### `getPseudoMoves(row: number, col: number): Move[]`
+#### `get_pseudo_moves(row: number, col: number): Move[]`
 Get all pseudo-legal moves (may leave king in check).
 
-#### `movePiece(move: Move): void`
+#### `move_piece(move: Move): void`
 Execute a move and update the game state.
 
-#### `validateMove(move: Move): boolean`
+#### `validate_move(move: Move): boolean`
 Check if a move is legal without executing it.
 
-#### `toFen(): string`
+#### `to_fen(): string`
 Get the current position as a FEN string.
 
-#### `getGameResult(): GameResult | null`
+#### `get_game_result(): GameResult | null`
 Get the game result or `null` if game is ongoing.
 
-#### `squareToChessNotation(row: number, col: number): string | null`
+#### `square_to_chess_notation(row: number, col: number): string | null`
 Convert a square to chess notation (e.g., "e4", "a1").
 
-#### `squareFromChessNotation(notation: string): Square | null`
+#### `square_from_chess_notation(notation: string): Square | null`
 Convert a chess notation to a square (e.g., "e4", "a1").
 
 ### Types
@@ -147,7 +147,7 @@ export type PieceType =
 Static utility functions for working with FEN strings:
 
 ```typescript
-import { parseFen, stringifyFen } from 'tiny-chess-wasm';
+import { parseFen, stringifyFen } from 'wasm-chess';
 
 // Parse FEN to game object
 const parsedGame = parseFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
