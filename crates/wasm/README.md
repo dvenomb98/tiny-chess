@@ -1,4 +1,4 @@
-# 🏁 tiny-chess-wasm
+# 🏁 wasm-chess
 
 [![npm version](https://img.shields.io/npm/v/tiny-chess-wasm.svg)](https://www.npmjs.com/package/tiny-chess-wasm)
 [![license](https://img.shields.io/npm/l/tiny-chess-wasm.svg)](https://github.com/danielbilek/tiny-chess/blob/main/LICENSE.md)
@@ -21,13 +21,13 @@ A minimal, fast chess engine written in Rust and compiled to WebAssembly. Perfec
 ## 📥 Installation
 
 ```bash
-npm install tiny-chess-wasm
+npm install wasm-chess
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
-import { WasmChess } from 'tiny-chess-wasm';
+import { WasmChess } from 'wasm-chess';
 
 // Create a new game (starts with standard opening position)
 const chess = new WasmChess();
