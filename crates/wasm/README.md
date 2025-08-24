@@ -1,6 +1,6 @@
 # 🏁 wasm-chess
 
-[![npm version](https://img.shields.io/npm/v/tiny-chess-wasm.svg)](https://www.npmjs.com/dvenomb98/tiny-chess-wasm)
+[![npm version](https://img.shields.io/npm/v/tiny-chess-wasm.svg)](https://www.npmjs.com/package/wasm-chess)
 [![license](https://img.shields.io/npm/l/tiny-chess-wasm.svg)](https://github.com/dvenomb98/tiny-chess/blob/main/LICENSE.md)
 
 A minimal, fast chess engine written in Rust and compiled to WebAssembly. Perfect for chess applications, games, and educational projects.
@@ -8,7 +8,6 @@ A minimal, fast chess engine written in Rust and compiled to WebAssembly. Perfec
 ## 🛠️ Requirements
 
 - **Node.js**: 16+
-- **Browsers**: Modern browsers with WebAssembly support
 - **TypeScript**: 4.0+ (optional, but recommended)
 
 ## ✨ Features
