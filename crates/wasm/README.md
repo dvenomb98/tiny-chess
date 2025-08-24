@@ -24,8 +24,6 @@ npm install wasm-chess
 
 ## 🚀 Quick Start
 
-### Javascript (without wasm)
-
 ```typescript
 import { WasmChess } from "wasm-chess";
 
@@ -71,10 +69,6 @@ const parsed_game = parse_fen(
 
 const fen_string = stringify_fen(parsed_game);
 ```
-
-### Wasm integration
-
-Readme will be updated soon.
 
 ## 🎮 API Reference
 
