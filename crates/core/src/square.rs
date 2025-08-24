@@ -48,12 +48,7 @@ impl Square {
         let rank = Self::rank_index_to_char(self.row)?;
         Some(format!("{}{}", file, rank))
     }
-
-    /// Get piece from this square on the given board
-    pub fn get_piece(&self, board: &types::Board) -> Option<pieces::PieceType> {
-        board[self.row][self.col]
-    }
-
+    
     /// Parse rank character ('1'-'8') to 0-based index (0-7)
     /// Note: rank '1' maps to row 7 (bottom), rank '8' maps to row 0 (top)
     fn rank_char_to_index(rank: char) -> Option<usize> {

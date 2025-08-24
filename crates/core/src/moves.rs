@@ -24,9 +24,9 @@ const KNIGHT_DIRS: [(isize, isize); 8] = [
 
 /// Get pseudo moves for a given piece at a given square
 pub fn get_pseudo_moves(target: square::Square, game: types::ParsedFen) -> Vec<types::Move> {
-    let piece = match target.get_piece(&game.board) {
-        Some(piece) => piece,
-        None => return Vec::new(),
+    let piece = match game.safe_access_square(target.row, target.col) {
+        Ok(Some(piece)) => piece,
+        _ => return Vec::new(),
     };
 
     match piece.piece_kind() {
