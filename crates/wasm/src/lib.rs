@@ -1,3 +1,4 @@
+use serde::Serialize;
 use tiny_chess_core::*;
 use wasm_bindgen::prelude::*;
 
@@ -70,7 +71,7 @@ extern "C" {
 #[wasm_bindgen]
 pub fn parse_fen(fen: &str) -> Result<ParsedFenJs, JsValue> {
     let result = Chess::parse_fen(fen).map_err(|e| format_error(e))?;
-    Ok(serde_wasm_bindgen::to_value(&result)?.into())
+    Ok(result.serialize(&CHESS_SERIALIZER)?.into())
 }
 
 #[wasm_bindgen]
@@ -132,7 +133,8 @@ impl WasmChess {
     #[wasm_bindgen]
     pub fn get_game_result(&self) -> Result<GameResultJs, JsValue> {
         let result = Chess::get_game_result(self.game).map_err(|e| format_error(e))?;
-        Ok(serde_wasm_bindgen::to_value(&result)?.into())
+
+        Ok(result.serialize(&CHESS_SERIALIZER)?.into())
     }
 
     #[wasm_bindgen]
@@ -146,6 +148,9 @@ impl WasmChess {
             .map(|square| serde_wasm_bindgen::to_value(&square).unwrap().into())
     }
 }
+
+static CHESS_SERIALIZER: serde_wasm_bindgen::Serializer =
+    serde_wasm_bindgen::Serializer::new().serialize_missing_as_null(true);
 
 fn parse_game_js(game: ParsedFenJs) -> Result<ParsedFen, JsValue> {
     serde_wasm_bindgen::from_value::<ParsedFen>(game.into()).map_err(|e| format_error(e))

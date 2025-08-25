@@ -1,5 +1,3 @@
-use crate::pieces;
-use crate::types;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
