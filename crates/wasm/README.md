@@ -1,20 +1,26 @@
 # 🏁 wasm-chess
 
-[![npm version](https://img.shields.io/npm/v/tiny-chess-wasm.svg)](https://www.npmjs.com/package/wasm-chess)
-[![license](https://img.shields.io/npm/l/tiny-chess-wasm.svg)](https://github.com/dvenomb98/tiny-chess/blob/main/LICENSE.md)
+[![npm version](https://img.shields.io/npm/v/wasm-chess.svg)](https://www.npmjs.com/package/wasm-chess)
+[![license](https://img.shields.io/npm/l/wasm-chess.svg)](https://github.com/dvenomb98/tiny-chess/blob/main/LICENSE.md)
 
-A minimal, fast chess engine written in Rust and compiled to WebAssembly. Perfect for chess applications, games, and educational projects.
+A minimal, fast chess engine written in Rust and compiled to WebAssembly with **bundler target** for optimal integration with modern JavaScript bundlers and frameworks.
 
 ## 🛠️ Requirements
 
-- **Node.js**: 16+
-- **TypeScript**: 4.0+ (optional, but recommended)
+- **Bundler**: Webpack, Vite, Rollup, Parcel, or any modern JavaScript bundler
+- **Node.js**: 16+ (for development)
+- **TypeScript**: 5.0+ (recommended)
+
+> ⚠️ **Important**: This package is built with `wasm-pack --target bundler` and requires a bundler to work properly. It will not work in vanilla browser environments or pure Node.js without bundling. Modern bundlers handle WASM loading automatically. No additional configuration needed in most cases.
 
 ## ✨ Features
 
+- **🎯 Bundler Target**: Specifically optimized for webpack, Vite, and other bundlers
 - **🚀 Fast**: Rust performance compiled to WebAssembly
-- **📦 Lightweight**: Minimal bundle size with `wee_alloc`
 - **🛡️ Type Safe**: Full TypeScript definitions included
+- **⚡ Universal**: Works in browser, Node.js, and server-side rendering (when bundled)
+- **📦 Framework Ready**: Perfect for Next.js, React, Vue, Svelte, and more
+- **🔄 No Init Required**: Ready to use immediately, no async initialization needed
 
 ## 📥 Installation
 
@@ -36,22 +42,19 @@ const chess = new WasmChess(
 );
 
 // Get legal moves for a piece at position (row, col)
-const moves = chess.get_moves(1, 4); // Get moves for white pawn at e2
+const moves = chess.get_moves(1, 4);
 
 // Make a move
-// chess.move_úiece(moves[0])
-chess.move_piece({
-  from_row_idx: 1,
-  from_col_idx: 4,
-  to_row_idx: 3,
-  to_col_idx: 4,
-  is_passant: false,
-  is_castle: false,
-  piece: "WhitePawn",
-});
+chess.move_piece(moves[0]);
 
 // Get current position as FEN
 const currentFen = chess.to_fen();
+
+// Accessing board state
+const is_enemy_square = chess.is_enemy_square(0, 0); // boolean
+const is_own_square = chess.is_own_square(0, 0); // boolean
+const is_square_empty = chess.is_square_empty(0, 0); // boolean
+const board_value = chess.access_square(0, 0); // BoardValue
 
 // Check game result
 const result = chess.get_game_result();
@@ -231,3 +234,13 @@ MIT © [Daniel Bilek](https://github.com/dvenomb98)
 - [GitHub Repository](https://github.com/dvenomb98/tiny-chess)
 - [Issues & Bug Reports](https://github.com/dvenomb98/tiny-chess/issues)
 - [npm Package](https://www.npmjs.com/package/wasm-chess)
+
+## 🔧 Build Information
+
+This package is built using:
+
+```bash
+wasm-pack build --target bundler --release
+```
+
+The bundler target generates ES modules that are optimized for modern JavaScript bundlers and handle WASM loading automatically.
