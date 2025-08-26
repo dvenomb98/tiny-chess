@@ -7,7 +7,7 @@
 //! - Stalemate
 //! - Insufficient material
 //! - Fifty move rule
-//! - Threefold repetition
+//! - Threefold repetition (TODO)
 //!
 //! Insufficient material list:
 //! 1. King vs. king
@@ -31,7 +31,7 @@ pub enum GameResult {
     Stalemate,
     InsufficientMaterial,
     FiftyMoveRule,
-    ThreefoldRepetition, // TODO: Implement this
+    ThreefoldRepetition
 }
 
 pub fn get_game_result(game: types::ParsedFen) -> types::ChessResult<Option<GameResult>> {

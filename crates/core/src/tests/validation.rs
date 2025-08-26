@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod validation_tests {
-    use crate::{Chess, pieces, types, validation};
+    use crate::{pieces, types, validation, Chess};
 
     #[test]
     pub fn test_scholar_mate() {
@@ -81,5 +81,51 @@ mod validation_tests {
         );
 
         assert_eq!(castle_move.is_err(), true);
+    }
+
+    #[test]
+    pub fn test_capturing_own_piece() {
+        let game =
+            Chess::parse_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();
+
+        let wrong_move = validation::validate_move(
+            types::Move {
+                from_col_idx: 0,
+                from_row_idx: 7,
+                to_col_idx: 1,
+                to_row_idx: 6,
+                is_castle: false,
+                is_passant: false,
+                piece: pieces::PieceType::WhiteRook,
+            },
+            game,
+        );
+
+        assert_eq!(wrong_move.is_err(), true);
+    }
+}
+
+mod validation_tests_against_state {
+    use crate::{pieces, types, validation, Chess};
+
+    #[test]
+    pub fn test_wrong_turn() {
+        let game =
+            Chess::parse_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap();
+
+        let wrong_move = validation::validate_move_against_state(
+            types::Move {
+                from_col_idx: 1,
+                from_row_idx: 1,
+                to_col_idx: 1,
+                to_row_idx: 2,
+                is_castle: false,
+                is_passant: false,
+                piece: pieces::PieceType::BlackPawn,
+            },
+            game,
+        );
+
+        assert_eq!(wrong_move.is_err(), true);
     }
 }

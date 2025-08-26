@@ -50,20 +50,30 @@ impl Chess {
     }
 
     /// Executes a move and returns the resulting game state.
-    /// Validates the move is legal before applying it to the board.
+    ///
+    /// 1. Validates the move against the game state.
+    /// 2. Validates the move is legal before applying it to the board.
+    ///
     pub fn move_piece(
         req_move: types::Move,
         game: types::ParsedFen,
     ) -> types::ChessResult<types::ParsedFen> {
+        validation::validate_move_against_state(req_move, game)?;
         Ok(validation::validate_move(req_move, game)?)
     }
 
-    /// Validates whether a move is legal in the current game state.
-    /// Returns true if the move is valid, or an error if it's not.
+    /// Validates the move against the game state and chess rules.
+    ///
+    /// 1. Validates the move against the game state.
+    /// 2. Validates the move is legal before applying it to the board.
+    ///
+    /// Returns the resulting game state if the move is valid, or an error if it's not.
+    ///
     pub fn validate_move(
         req_move: types::Move,
         game: types::ParsedFen,
     ) -> types::ChessResult<bool> {
+        validation::validate_move_against_state(req_move, game)?;
         validation::validate_move(req_move, game)?;
 
         Ok(true)

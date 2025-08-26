@@ -1,3 +1,7 @@
+//!
+//! # Validation Module
+//!
+
 use crate::err;
 use crate::moves;
 use crate::pieces;
@@ -5,6 +9,12 @@ use crate::square;
 use crate::state;
 use crate::types;
 
+/// The `validate_moves` function validates a list of moves against chess rules.
+///
+/// 1. Validates each move against the chess rules.
+///
+/// Returns a list of validated moves.
+///
 pub fn validate_moves(req_moves: Vec<types::Move>, game: types::ParsedFen) -> Vec<types::Move> {
     let mut validated_moves = Vec::new();
 
@@ -17,11 +27,35 @@ pub fn validate_moves(req_moves: Vec<types::Move>, game: types::ParsedFen) -> Ve
     validated_moves
 }
 
-// TODO: Extend this to check for wrong moves (pawns jumping across the board, capturing own pieces, etc..)
+/// The `validate_move` function validation move agains chess rules.
+///
+///  1. Capturing own pieces
+///  2. King would end up in check after the move
+///  3. Current player king not found on board
+///  4. Opponent has no pieces (corrupted game state)
+///  5. King cannot castle (no castling rights)
+///  6. Cannot castle short - path is under attack
+///  7. Cannot castle long - path is under attack
+///
+/// If the move is valid, the function returns the next game state.
+///
+/// For validation against the game state, see `validate_move_against_state`.
+///
 pub fn validate_move(
     req_move: types::Move,
     game: types::ParsedFen,
 ) -> types::ChessResult<types::ParsedFen> {
+    if game.is_own_square(
+        req_move.to_row_idx,
+        req_move.to_col_idx,
+        req_move.piece.color(),
+    ) {
+        return Err(err::ChessError::InvalidMove(format!(
+            "Cannot move {:?} to {:?}{:?} because it's own piece",
+            req_move.piece, req_move.to_row_idx, req_move.to_col_idx
+        )));
+    }
+
     let next_game = state::get_next(req_move, game)?;
 
     let mut king_position: Option<square::Square> = None;
@@ -132,4 +166,25 @@ pub fn validate_move(
     }
 
     Ok(next_game)
+}
+
+/// The `validate_move_against_state` function validates the move against the game state.
+///
+///  1. Wrong turn - piece color doesn't match current player
+///
+/// If the move is valid, the function returns `Ok(())`.
+///
+/// For validation against chess rules, see `validate_move`.
+pub fn validate_move_against_state(
+    req_move: types::Move,
+    game: types::ParsedFen,
+) -> types::ChessResult<()> {
+    if game.state.on_turn != req_move.piece.color() {
+        return Err(err::ChessError::InvalidMove(format!(
+            "Cannot move {:?} when player on turn is {:?}",
+            req_move.piece, game.state.on_turn
+        )));
+    }
+
+    Ok(())
 }

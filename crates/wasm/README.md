@@ -68,6 +68,9 @@ const parsed_game = parse_fen(
 );
 
 const fen_string = stringify_fen(parsed_game);
+
+const square_to_chess_notation = square_to_chess_notation(0, 0); // "a1"
+const square_from_chess_notation = square_from_chess_notation("a1"); // { row: 0, col: 0 }
 ```
 
 ## 🎮 API Reference
@@ -82,58 +85,74 @@ new WasmChess(fen?: string)
 
 ### Exports
 
-#### Instance methods
-
-##### `new WasmChess(fen?: string)`
+#### `new WasmChess(fen?: string)`
 
 Create a new game instance.
 
-##### `get_moves(row: number, col: number): Move[]`
+#### `get_moves(row: number, col: number): Move[]`
 
 Get all legal moves for a piece at the specified position.
 
-##### `get_pseudo_moves(row: number, col: number): Move[]`
+#### `get_pseudo_moves(row: number, col: number): Move[]`
 
 Get all pseudo-legal moves (may leave king in check).
 
-##### `move_piece(move: Move): void`
+#### `move_piece(move: Move): void`
 
 Execute a move and update the game state.
 
-##### `validate_move(move: Move): boolean`
+#### `validate_move(move: Move): boolean`
 
 Check if a move is legal without executing it.
 
-##### `to_fen(): string`
+#### `to_fen(): string`
 
 Get the current position as a FEN string.
 
-##### `get_game_result(): GameResult | null`
+#### `get_game_result(): GameResult | null`
 
 Get the game result or `null` if game is ongoing.
 
-##### `square_to_chess_notation(row: number, col: number): string | null`
+#### `access_square(row: number, col: number): BoardValue`
 
-Convert a square to chess notation (e.g., "e4", "a1").
+Access a square on the board.
 
-##### `square_from_chess_notation(notation: string): Square | null`
+#### `is_enemy_square(row: number, col: number): boolean`
 
-Convert a chess notation to a square (e.g., "e4", "a1").
+Check if a square is occupied by an enemy piece.
 
-#### Additional methods
+#### `is_own_square(row: number, col: number): boolean`
 
-##### `parse_fen(fen: string): ParsedFen`
+Check if a square is occupied by a piece of the current player.
+
+#### `is_square_empty(row: number, col: number): boolean`
+
+Check if a square is empty.
+
+### Additional methods
+
+#### `parse_fen(fen: string): ParsedFen`
 
 Parse a FEN string into a game object.
 
-##### `stringify_fen(game: ParsedFen): string`
+#### `stringify_fen(game: ParsedFen): string`
 
 Convert a game object back to a FEN string.
+
+#### `square_to_chess_notation(row: number, col: number): string | null`
+
+Convert a square to chess notation (e.g., "e4", "a1").
+
+#### `square_from_chess_notation(notation: string): Square | null`
+
+Convert a chess notation to a square (e.g., "e4", "a1").
 
 ### Types
 
 ```typescript
-export type Board = (PieceType | null)[][];
+export type BoardValue = PieceType | null;
+
+export type Board = BoardValue[][];
 
 export type ParsedFen = {
   board: Board;

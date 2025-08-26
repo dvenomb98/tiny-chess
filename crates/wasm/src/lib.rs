@@ -2,11 +2,12 @@ use serde::Serialize;
 use tiny_chess_core::*;
 use wasm_bindgen::prelude::*;
 
-// Custom TypeScript definitions
 #[wasm_bindgen(typescript_custom_section)]
 const TS_APPEND_CONTENT: &'static str = r#"
 
-export type Board = (PieceType | null)[][];
+export type BoardValue = PieceType | null;
+
+export type Board = BoardValue[][];
 
 export type ParsedFen = {
   board: Board;
@@ -66,7 +67,16 @@ extern "C" {
 
     #[wasm_bindgen(typescript_type = "Square")]
     pub type SquareJs;
+
+    #[wasm_bindgen(typescript_type = "BoardValue")]
+    pub type BoardValueJs;
 }
+
+//
+//
+// # Stateless functions
+//
+//
 
 #[wasm_bindgen]
 pub fn parse_fen(fen: &str) -> Result<ParsedFenJs, JsValue> {
@@ -79,6 +89,23 @@ pub fn stringify_fen(game: ParsedFenJs) -> Result<String, JsValue> {
     let parsed_game = parse_game_js(game)?;
     Chess::stringify(&parsed_game).map_err(|e| format_error(e))
 }
+
+#[wasm_bindgen]
+pub fn square_to_chess_notation(row: usize, col: usize) -> Option<String> {
+    Square::new(row, col).to_chess_notation()
+}
+
+#[wasm_bindgen]
+pub fn square_from_chess_notation(notation: &str) -> Option<SquareJs> {
+    Square::new_from_chess_notation(notation)
+        .map(|square| serde_wasm_bindgen::to_value(&square).unwrap().into())
+}
+
+//
+//
+// # Main struct
+//
+//
 
 #[wasm_bindgen]
 pub struct WasmChess {
@@ -138,16 +165,35 @@ impl WasmChess {
     }
 
     #[wasm_bindgen]
-    pub fn square_to_chess_notation(&self, row: usize, col: usize) -> Option<String> {
-        Square::new(row, col).to_chess_notation()
+    pub fn access_square(&self, row: usize, col: usize) -> Result<BoardValueJs, JsValue> {
+        let result = self
+            .game
+            .safe_access_square(row, col)
+            .map_err(|e| format_error(e))?;
+        Ok(result.serialize(&CHESS_SERIALIZER)?.into())
     }
 
     #[wasm_bindgen]
-    pub fn square_from_chess_notation(&self, notation: &str) -> Option<SquareJs> {
-        Square::new_from_chess_notation(notation)
-            .map(|square| serde_wasm_bindgen::to_value(&square).unwrap().into())
+    pub fn is_enemy_square(&self, row: usize, col: usize) -> bool {
+        self.game.is_enemy_square(row, col, self.game.state.on_turn)
+    }
+
+    #[wasm_bindgen]
+    pub fn is_own_square(&self, row: usize, col: usize) -> bool {
+        self.game.is_own_square(row, col, self.game.state.on_turn)
+    }
+
+    #[wasm_bindgen]
+    pub fn is_square_empty(&self, row: usize, col: usize) -> bool {
+        self.game.is_square_empty(row, col)
     }
 }
+
+//
+//
+// #  Private functions
+//
+//
 
 static CHESS_SERIALIZER: serde_wasm_bindgen::Serializer =
     serde_wasm_bindgen::Serializer::new().serialize_missing_as_null(true);

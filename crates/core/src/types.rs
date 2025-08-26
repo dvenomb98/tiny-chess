@@ -1,8 +1,8 @@
-use serde::{Serialize, Deserialize};
 use crate::err;
 use crate::pieces;
 use crate::player;
 use crate::square;
+use serde::{Deserialize, Serialize};
 
 pub const BOARD_SIZE: usize = 8;
 pub const MAX_SIZE_INDEX: usize = 7;
@@ -35,7 +35,7 @@ pub struct Move {
     pub to_row_idx: usize,
     pub is_passant: bool,
     pub is_castle: bool,
-    pub piece: pieces::PieceType
+    pub piece: pieces::PieceType,
 }
 
 pub type ChessResult<T> = std::result::Result<T, err::ChessError>;
@@ -64,6 +64,12 @@ impl ParsedFen {
         return self
             .safe_access_square(row, col)
             .is_ok_and(|piece| piece.is_some() && piece.unwrap().color() != cur_color);
+    }
+
+    pub fn is_own_square(&self, row: usize, col: usize, cur_color: player::Player) -> bool {
+        return self
+            .safe_access_square(row, col)
+            .is_ok_and(|piece| piece.is_some() && piece.unwrap().color() == cur_color);
     }
 
     pub fn is_square_empty(&self, row: usize, col: usize) -> bool {
