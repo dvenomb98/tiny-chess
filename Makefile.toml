@@ -3,19 +3,19 @@
 description = "Build the WASM crate with dev features"
 cwd = "crates/wasm"
 command = "wasm-pack"
-args = ["build", "--target", "bundler", "--dev"]
+args = ["build", "--target", "nodejs", "--dev"]
 workspace = false
 
 [tasks.build-wasm-profiling]
 description = "Build the WASM crate with profiling features"
 cwd = "crates/wasm"
 command = "wasm-pack"
-args = ["build", "--target", "bundler", "--profiling"]
+args = ["build", "--target", "nodejs", "--profiling"]
 workspace = false
 
 [tasks.build-wasm-release]
 description = "Build the WASM crate with release features"
 cwd = "crates/wasm"
 command = "wasm-pack"
-args = ["build", "--target", "bundler", "--release"]
+args = ["build", "--target", "nodejs", "--release"]
 workspace = false
