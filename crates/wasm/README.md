@@ -3,17 +3,22 @@
 [![npm version](https://img.shields.io/npm/v/wasm-chess.svg)](https://www.npmjs.com/package/wasm-chess)
 [![license](https://img.shields.io/npm/l/wasm-chess.svg)](https://github.com/dvenomb98/tiny-chess/blob/main/LICENSE.md)
 
-A minimal, fast chess engine written in Rust and compiled to WebAssembly for the Node.js runtime.
+A minimal, fast chess engine written in Rust and compiled to WebAssembly with **bundler target** for optimal integration with modern JavaScript bundlers and frameworks.
 
 ## 🛠️ Requirements
 
+- **Bundler**: Webpack, Vite, Rollup, Parcel, or any modern JavaScript bundler
 - **Node.js**: 16+ (for development)
 - **TypeScript**: 5.0+ (recommended)
+
+> ⚠️ **Important**: This package is built with `wasm-pack --target bundler` and requires a bundler to work properly. It will not work in vanilla browser environments or pure Node.js without bundling. Modern bundlers handle WASM loading automatically. No additional configuration needed in most cases.
 
 ## ✨ Features
 
 - **🚀 Fast**: Rust performance compiled to WebAssembly
 - **🛡️ Type Safe**: Full TypeScript definitions included
+- **⚡ Universal**: Works in browser, Node.js, and server-side rendering (when bundled)
+- **📦 Framework Ready**: Perfect for Next.js, React, Vue, Svelte, and more
 
 ## 📥 Installation
 
@@ -67,6 +72,7 @@ const fen_string = stringify_fen(parsed_game);
 const square_to_chess_notation = square_to_chess_notation(0, 0); // "a1"
 const square_from_chess_notation = square_from_chess_notation("a1"); // { row: 0, col: 0 }
 ```
+
 
 ## 🎮 API Reference
 
@@ -229,8 +235,12 @@ MIT © [Daniel Bilek](https://github.com/dvenomb98)
 
 ## 🔧 Build Information
 
+## 🔧 Build Information
+
 This package is built using:
 
 ```bash
-wasm-pack build --target nodejs --release
+wasm-pack build --target bundler --release
 ```
+
+The bundler target generates ES modules that are optimized for modern JavaScript bundlers and handle WASM loading automatically.
