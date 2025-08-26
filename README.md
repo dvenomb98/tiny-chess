@@ -19,7 +19,9 @@ Before building this project, ensure you have the following tools installed:
 ### Build WASM bindings
 
 ```bash
-cargo make build-wasm
+cargo make build-wasm-dev
+cargo make build-wasm-profiling
+cargo make build-wasm-release
 ```
 
 ## Structure
