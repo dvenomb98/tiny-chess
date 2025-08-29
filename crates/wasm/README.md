@@ -195,6 +195,8 @@ export type GameResult =
   | "InsufficientMaterial"
   | "FiftyMoveRule"
   | "ThreefoldRepetition"
+  | "WhiteResignation"
+  | "BlackResignation"
   | null;
 
 export type Player = "White" | "Black";
