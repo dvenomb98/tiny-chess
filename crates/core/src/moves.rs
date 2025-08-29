@@ -101,15 +101,18 @@ fn pawn_moves(
                     });
                 } else if let Some(en_passant_square) = game.state.en_passant_square {
                     if new_row == en_passant_square.row && new_col == en_passant_square.col {
-                        moves.push(types::Move {
-                            from_col_idx: target.col,
-                            from_row_idx: target.row,
-                            to_col_idx: new_col,
-                            to_row_idx: new_row,
-                            is_castle: false,
-                            is_passant: true,
-                            piece,
-                        });
+                        let captured_pawn_row = target.row;
+                        if game.is_enemy_square(captured_pawn_row, new_col, piece_color) {
+                            moves.push(types::Move {
+                                from_col_idx: target.col,
+                                from_row_idx: target.row,
+                                to_col_idx: new_col,
+                                to_row_idx: new_row,
+                                is_castle: false,
+                                is_passant: true,
+                                piece,
+                            });
+                        }
                     }
                 }
             }

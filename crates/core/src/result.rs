@@ -31,7 +31,9 @@ pub enum GameResult {
     Stalemate,
     InsufficientMaterial,
     FiftyMoveRule,
-    ThreefoldRepetition
+    ThreefoldRepetition,
+    WhiteResignation,
+    BlackResignation,
 }
 
 pub fn get_game_result(game: types::ParsedFen) -> types::ChessResult<Option<GameResult>> {

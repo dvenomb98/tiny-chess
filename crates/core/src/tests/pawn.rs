@@ -1,8 +1,6 @@
 #[cfg(test)]
 mod test_pawn_moves {
-    use crate::{Chess, moves, pieces, player, square, types};
-
-
+    use crate::{moves, pieces, player, square, types, Chess};
 
     #[test]
     fn test_white_en_passant() {
@@ -49,8 +47,6 @@ mod test_pawn_moves {
         assert_eq!(moves[0].to_col_idx, 0);
         assert_eq!(moves[0].to_row_idx, 2);
         assert_eq!(moves[0].is_castle, false);
-    
-       
     }
 
     #[test]
@@ -102,5 +98,17 @@ mod test_pawn_moves {
         let moves2 = moves::get_pseudo_moves(square::Square::new(7, 7), game);
         assert_eq!(moves.len(), 1);
         assert_eq!(moves2.len(), 0);
+    }
+
+    #[test]
+    fn test_self_passant() {
+        let fen = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1";
+        let result = Chess::parse_fen(fen).unwrap();
+        let moves = moves::get_pseudo_moves(square::Square::new(6, 2), result);
+
+        assert!(
+            moves.iter().all(|m| m.to_col_idx != 3 || !m.is_passant),
+            "Cant perform self en passant!"
+        );
     }
 }

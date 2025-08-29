@@ -42,7 +42,7 @@ export type Move = {
 
 export type Moves = Move[];
 
-export type GameResult = "WhiteCheckmate" | "BlackCheckmate" | "Stalemate" | "InsufficientMaterial" | "FiftyMoveRule" | "ThreefoldRepetition" | null;
+export type GameResult = "WhiteCheckmate" | "BlackCheckmate" | "Stalemate" | "InsufficientMaterial" | "FiftyMoveRule" | "ThreefoldRepetition" | "WhiteResignation" | "BlackResignation" | null;
 
 export type Player = "White" | "Black";
 
