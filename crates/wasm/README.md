@@ -59,10 +59,18 @@ const result = chess.get_game_result();
 if (result === "WhiteCheckmate") {
   console.log("White wins!");
 }
+
+// Get current game state
+const state = chess.get_state();
 ```
 
 ```typescript
-import { parse_fen, stringify_fen, square_to_chess_notation, square_from_chess_notation } from "wasm-chess";
+import {
+  parse_fen,
+  stringify_fen,
+  square_to_chess_notation,
+  square_from_chess_notation,
+} from "wasm-chess";
 
 const parsed_game = parse_fen(
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -72,7 +80,6 @@ const fen_string = stringify_fen(parsed_game);
 const square_to_chess_notation = square_to_chess_notation(0, 0); // "a1"
 const square_from_chess_notation = square_from_chess_notation("a1"); // { row: 0, col: 0 }
 ```
-
 
 ## 🎮 API Reference
 
@@ -109,6 +116,10 @@ Check if a move is legal without executing it.
 #### `to_fen(): string`
 
 Get the current position as a FEN string.
+
+#### `get_state(): ParsedFen`
+
+Get the current game state as a parsed FEN object.
 
 #### `get_game_result(): GameResult | null`
 

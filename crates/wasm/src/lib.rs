@@ -131,6 +131,11 @@ impl WasmChess {
     }
 
     #[wasm_bindgen]
+    pub fn get_state(&self) -> Result<ParsedFenJs, JsValue> {
+        Ok(self.game.serialize(&CHESS_SERIALIZER)?.into())
+    }
+
+    #[wasm_bindgen]
     pub fn get_moves(&self, row: usize, col: usize) -> Result<MovesJs, JsValue> {
         let moves = Chess::get_moves(Square::new(row, col), self.game);
         Ok(serde_wasm_bindgen::to_value(&moves)?.into())
