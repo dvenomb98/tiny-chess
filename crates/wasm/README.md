@@ -117,6 +117,10 @@ Check if a move is legal without executing it.
 
 Get the current position as a FEN string.
 
+#### `load_new_fen(): void`
+
+Load a new game from fen notation string
+
 #### `get_state(): ParsedFen`
 
 Get the current game state as a parsed FEN object.

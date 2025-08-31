@@ -126,6 +126,13 @@ impl WasmChess {
     }
 
     #[wasm_bindgen]
+    pub fn load_new_fen(&mut self, fen: String) -> Result<(), JsValue> {
+        let result = Chess::parse_fen(&fen).map_err(|e| format_error(e))?;
+        self.game = result;
+        Ok(())
+    }
+
+    #[wasm_bindgen]
     pub fn to_fen(&self) -> Result<String, JsValue> {
         Chess::stringify(&self.game).map_err(|e| format_error(e))
     }
