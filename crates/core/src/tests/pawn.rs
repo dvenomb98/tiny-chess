@@ -111,4 +111,13 @@ mod test_pawn_moves {
             "Cant perform self en passant!"
         );
     }
+
+    #[test]
+    fn test_blocked_start_position() {
+        let fen = "r1bqkbnr/pppppppp/2n5/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 2 2";
+        let result = Chess::parse_fen(fen).unwrap();
+        let moves = moves::get_pseudo_moves(square::Square::new(6, 5), result);
+
+        assert_eq!(moves.len(), 0);
+    }
 }

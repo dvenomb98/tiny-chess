@@ -63,13 +63,15 @@ fn pawn_moves(
                 to_row_idx: one_step,
                 is_castle: false,
                 is_passant: false,
-                piece
+                piece,
             });
         }
         // Second step forward
         if target.row == start_row {
             if let Some(second_step) = one_step.checked_add_signed(direction) {
-                if game.is_square_empty(second_step, target.col) {
+                if game.is_square_empty(one_step, target.col)
+                    && game.is_square_empty(second_step, target.col)
+                {
                     moves.push(types::Move {
                         from_col_idx: target.col,
                         from_row_idx: target.row,
@@ -77,7 +79,7 @@ fn pawn_moves(
                         to_row_idx: second_step,
                         is_castle: false,
                         is_passant: false,
-                        piece
+                        piece,
                     });
                 }
             }
@@ -276,8 +278,18 @@ fn queen_moves(
     game: types::ParsedFen,
 ) -> Vec<types::Move> {
     let mut moves = Vec::new();
-    moves.extend(self::get_direction_moves(target, piece, game, &STRAIGHT_DIRS));
-    moves.extend(self::get_direction_moves(target, piece, game, &DIAGONAL_DIRS));
+    moves.extend(self::get_direction_moves(
+        target,
+        piece,
+        game,
+        &STRAIGHT_DIRS,
+    ));
+    moves.extend(self::get_direction_moves(
+        target,
+        piece,
+        game,
+        &DIAGONAL_DIRS,
+    ));
     moves
 }
 
