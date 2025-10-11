@@ -110,25 +110,40 @@ pub fn square_from_chess_notation(notation: &str) -> Option<SquareJs> {
 #[wasm_bindgen]
 pub struct WasmChess {
     game: ParsedFen,
+    history: Vec<String>,
+    current_position: usize,
 }
 
 #[wasm_bindgen]
 impl WasmChess {
     #[wasm_bindgen(constructor)]
     pub fn new(fen: Option<String>) -> Result<WasmChess, JsValue> {
+        let mut initial_history_vec = Vec::new();
+
         let game = if let Some(fen_str) = fen {
-            Chess::parse_fen(&fen_str).map_err(|e| format_error(e))?
+            let result = Chess::parse_fen(&fen_str).map_err(|e| format_error(e))?;
+            initial_history_vec.push(fen_str);
+            result
         } else {
-            Chess::parse_fen(INITIAL_FEN).map_err(|e| format_error(e))?
+            let result = Chess::parse_fen(INITIAL_FEN).map_err(|e| format_error(e))?;
+            initial_history_vec.push(INITIAL_FEN.to_string());
+            result
         };
 
-        Ok(WasmChess { game })
+        Ok(WasmChess {
+            game,
+            history: initial_history_vec,
+            current_position: 0,
+        })
     }
 
     #[wasm_bindgen]
     pub fn load_new_fen(&mut self, fen: String) -> Result<(), JsValue> {
         let result = Chess::parse_fen(&fen).map_err(|e| format_error(e))?;
+
         self.game = result;
+        self.history = vec![fen];
+        self.current_position = 0;
         Ok(())
     }
 
@@ -158,7 +173,17 @@ impl WasmChess {
     pub fn move_piece(&mut self, req_move: MoveJs) -> Result<(), JsValue> {
         let parsed_move = parse_move_js(req_move)?;
         let result = Chess::move_piece(parsed_move, self.game).map_err(|e| format_error(e))?;
+        let new_fen = Chess::stringify(&result).map_err(|e| format_error(e))?;
+
         self.game = result;
+
+        if self.current_position < self.history.len() - 1 {
+            self.history.truncate(self.current_position + 1);
+        }
+
+        self.history.push(new_fen);
+        self.current_position = self.history.len() - 1;
+
         Ok(())
     }
 
@@ -175,6 +200,12 @@ impl WasmChess {
 
         Ok(result.serialize(&CHESS_SERIALIZER)?.into())
     }
+
+    //
+    //
+    // # Square utils
+    //
+    //
 
     #[wasm_bindgen]
     pub fn access_square(&self, row: usize, col: usize) -> Result<BoardValueJs, JsValue> {
@@ -198,6 +229,80 @@ impl WasmChess {
     #[wasm_bindgen]
     pub fn is_square_empty(&self, row: usize, col: usize) -> bool {
         self.game.is_square_empty(row, col)
+    }
+
+    //
+    //
+    // # History block
+    //
+    //
+
+    #[wasm_bindgen]
+    pub fn get_history(&self) -> Vec<String> {
+        self.history.clone()
+    }
+
+    #[wasm_bindgen]
+    pub fn get_current_position(&self) -> usize {
+        self.current_position
+    }
+
+    #[wasm_bindgen]
+    pub fn get_history_length(&self) -> usize {
+        self.history.len()
+    }
+
+    #[wasm_bindgen]
+    pub fn can_undo(&self) -> bool {
+        self.current_position > 0
+    }
+
+    #[wasm_bindgen]
+    pub fn can_redo(&self) -> bool {
+        self.current_position < self.history.len() - 1
+    }
+
+    #[wasm_bindgen]
+    pub fn undo(&mut self) -> Result<(), JsValue> {
+        if !self.can_undo() {
+            return Err(format_error("Cant undo."))
+        }
+
+        self.current_position -= 1;
+        let fen = &self.history[self.current_position];
+        self.game = Chess::parse_fen(fen).map_err(|e| format_error(e))?;
+
+        Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub fn redo(&mut self) -> Result<(), JsValue> {
+        if !self.can_redo() {
+            return Err(format_error("Cant redo."))
+        }
+
+        self.current_position += 1;
+        let fen = &self.history[self.current_position];
+        self.game = Chess::parse_fen(fen).map_err(|e| format_error(e))?;
+
+        Ok(())
+    }
+
+    #[wasm_bindgen]
+    pub fn goto_position(&mut self, index: usize) -> Result<(), JsValue> {
+        if index >= self.history.len() {
+            return Err(JsValue::from_str(&format!(
+                "Position {} is out of bounds. History length is {}",
+                index,
+                self.history.len()
+            )));
+        }
+
+        self.current_position = index;
+        let fen = &self.history[index];
+        self.game = Chess::parse_fen(fen).map_err(|e| format_error(e))?;
+
+        Ok(())
     }
 }
 

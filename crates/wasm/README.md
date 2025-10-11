@@ -19,6 +19,7 @@ A minimal, fast chess engine written in Rust and compiled to WebAssembly with **
 - **🛡️ Type Safe**: Full TypeScript definitions included
 - **⚡ Universal**: Works in browser, Node.js, and server-side rendering (when bundled)
 - **📦 Framework Ready**: Perfect for Next.js, React, Vue, Svelte, and more
+- **📜 History Management**: Built-in undo/redo with position navigation
 
 ## 📥 Installation
 
@@ -62,6 +63,18 @@ if (result === "WhiteCheckmate") {
 
 // Get current game state
 const state = chess.get_state();
+
+// History navigation
+chess.undo(); // Go back one move
+chess.redo(); // Go forward one move
+chess.goto_position(0); // Jump to start
+
+// History queries
+const canUndo = chess.can_undo(); // boolean
+const canRedo = chess.can_redo(); // boolean
+const currentPos = chess.get_current_position(); // number
+const historyLen = chess.get_history_length(); // number
+const history = chess.get_history(); // string[] (array of FEN strings)
 ```
 
 ```typescript
@@ -79,6 +92,18 @@ const fen_string = stringify_fen(parsed_game);
 
 const square_to_chess_notation = square_to_chess_notation(0, 0); // "a1"
 const square_from_chess_notation = square_from_chess_notation("a1"); // { row: 0, col: 0 }
+```
+
+## Recommendation
+
+To catch rust errors, we recommend to wrap methods in try/catch blocks.
+
+```js
+try {
+  parse_fen("invalid_fen");
+} catch (e) {
+  console.log(e);
+}
 ```
 
 ## 🎮 API Reference
@@ -144,6 +169,42 @@ Check if a square is occupied by a piece of the current player.
 #### `is_square_empty(row: number, col: number): boolean`
 
 Check if a square is empty.
+
+### History Management
+
+#### `get_history(): string[]`
+
+Get the complete move history as an array of FEN strings.
+
+#### `get_current_position(): number`
+
+Get the current position index in the history (0-based).
+
+#### `get_history_length(): number`
+
+Get the total number of positions in the history.
+
+#### `can_undo(): boolean`
+
+Check if undo is available (returns `true` if not at the start).
+
+#### `can_redo(): boolean`
+
+Check if redo is available (returns `true` if not at the latest position).
+
+#### `undo(): void`
+
+Go back one position in the history. Returns `true` if successful, `false` if already at the start.
+
+#### `redo(): void`
+
+Go forward one position in the history. Returns `true` if successful, `false` if already at the end.
+
+#### `goto_position(index: number): void`
+
+Jump to a specific position in the history. Throws an error if the index is out of bounds.
+
+**Note:** When you make a move after undoing, all future positions are cleared (branching behavior).
 
 ### Additional methods
 
